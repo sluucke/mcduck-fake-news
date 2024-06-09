@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Duck David's Website</title>
+    <link href="/static/index.css" rel="stylesheet" />
+</head>
+<body class="center">
+
+    <form action="{{ url_for('login') }}" method="POST">
+        <div class="duck duck-login">
+            <img src="https://pngimg.com/d/rubber_duck_PNG52.png" />
+        </div>
+        <div class="formgroup">
+            <label>Nome</label>
+            <input type="text" name="username" id="username" />
+        </div>
+        <div class="formgroup">
+            <label>Senha</label>
+            <input type="password" name="password" id="password" />
+        </div>
+        <button class="btn-primary" type="submit">
+            Entrar
+        </button>
+    </form>
+</body>
+</html>
