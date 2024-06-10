@@ -7,6 +7,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import llm
 from langchain_community.document_loaders.csv_loader import CSVLoader
 import pandas as pd
+from flask_app import db, Users, Searchs
 
 load_dotenv()
 # adapter
@@ -131,3 +132,12 @@ class IBGEParser(Parser):
         )
 
         return prompt
+
+
+# class Proxy:
+#     def __init__(self):
+#         self.searchs = Searchs()
+        
+
+#     def chat_prompt(self, query: str):
+#         return self.parser.chat_prompt(query)

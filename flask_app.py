@@ -84,12 +84,12 @@ def llm():
 
     chat = ChatGPT()
     ibgeParser = IBGEParser()
-    prompts = ibgeParser.chat_prompt(user_prompt)
+    parser = ibgeParser.chat_prompt(user_prompt)
     # ibgeParser.generate_csv_data(user_prompt)
     # docs = ibgeParser.parse_llm(user_prompt)
     # prompt = ibgeParser.prompt_maker()
     content = chat.chat_prompt(
-        prompt=prompts['prompt'], docs=prompts['docs'], afirmacao=user_prompt)
+        prompt=parser['prompt'], data=parser['docs'], afirmacao=user_prompt)
     if 'username' in session:
         try:
             user = Users.query.filter_by(username=session['username']).first()
