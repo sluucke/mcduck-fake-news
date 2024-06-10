@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Duck David's Website</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="/public/index.css" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+
+      theme: {
+        extend: {
+          colors: {
+            'duck-blue': '#1E90FF',
+            'duck-yellow': '#FFD700',
+            'duck-red': '#FF0000',
+            'duck-green': '#008000',
+            'duck-black': '#000000',
+            'duck-white': '#FFFFFF',
+            'duck': {
+              'light': '#FFD700',
+              'low': '#FFD700',
+              'dark': '#47A4FF',
+            },
+            background: {
+              500: '#121214'
+            },
+            'gray': {
+              600: '#323238',
+              800: '#202024',
+            }
+          },
+          fontFamily: {
+            'duck': ['Roboto', 'sans-serif'],
+          },
+        },
+      },
+
+    };
+  </script>
+  {% block head %}{% endblock %}
+</head>
+
+<body class="px-8 md:px-0">
+  {% block content %}{% endblock %}
+</body>
+
+</html>
