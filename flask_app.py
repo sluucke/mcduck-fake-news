@@ -115,7 +115,7 @@ def llmroute():
             'content': search.answer
         }
     
-    chat = llm.ChatGPT()
+    chat = llm.LLM(llm.ChatGPT)
     ibgeParser = llm.IBGEParser()
     parser = ibgeParser.chat_prompt(user_prompt)
     # ibgeParser.generate_csv_data(user_prompt)
