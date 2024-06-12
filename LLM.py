@@ -7,21 +7,17 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import llm
 from langchain_community.document_loaders.csv_loader import CSVLoader
 import pandas as pd
-import flask_app
-# from .flask_app import db, Users, Searchs
-# from flask_app import Searchs
 
 
 load_dotenv()
-# adapter
 
-
-# class llm:
-#     def prompt(self, message: str, llm: object) -> str:
-#         if isinstance(llm, ChatGPT):
-#             return llm.chat_prompt(message)
-#         else:
-#             return "No LLM found"
+# Estrutural: Fachada
+class LLM:
+    def prompt(self, message: str, llm: object) -> str:
+        if isinstance(llm, ChatGPT):
+            return llm.chat_prompt(message)
+        else:
+            return "No LLM found"
 
 
 # Criacional: singleton
@@ -37,6 +33,9 @@ class ChatGPT:
     def chat_prompt(self, prompt: object, data: str, afirmacao: str) -> str:
         return llm.LLMChain(llm=ChatGPT.llm, prompt=prompt).run(
             data=data, afirmacao=afirmacao)
+    
+    def get_instance(self):
+        return ChatGPT.llm
 
 # Comportamental: Template Method
 
@@ -141,7 +140,7 @@ class IBGEParser(Parser):
         return prompt
 
 
-# Estrutural: Proxy
+
 
 class Proxy:
     def check_similar_query(self, query: str, searchs: object) -> object | None:
@@ -176,6 +175,7 @@ class Proxy:
 
         return prompt
     
+
 
 
 
