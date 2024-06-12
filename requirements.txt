@@ -1,0 +1,7 @@
+python-dotenv
+langchain
+langchain-community
+langchain-openai
+pandas
+requests
+faiss-cpu

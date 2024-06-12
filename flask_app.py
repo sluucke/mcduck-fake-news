@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from LLM import ChatGPT, IBGEParser, Parser
+# from llm import ChatGPT, IBGEParser
+import llm
+import datetime
 import json
 
 app = Flask(__name__,
@@ -68,41 +70,112 @@ def index():
             session['username'] = request.form['username']
 
         return redirect('/')
+    
+    def handleDeleteSearch(search_id):
+        search = Searchs.query.filter_by(id=search_id).first()
+        db.session.delete(search)
+        db.session.commit()
+        return redirect('/')
+    
+    # most_searchs = Searchs.query.order_by(Searchs.created_at.desc()).limit(5).all()
 
-    return render_template("index.html", is_logged=is_logged, prompts=searchs)
+
+
+    return render_template("index.html", is_logged=is_logged, prompts=searchs, handleDeleteSearch=handleDeleteSearch)
 
 
 @app.route('/llm', methods=['POST'])
-def llm():
+def llmroute():
     data: str = request.data
 
     json_data = json.loads(data)
     user_prompt = json_data['prompt']
+    search_id = json_data['search_id'] if 'search_id' in json_data else None
 
     if user_prompt == "":
         return {'content': "Prompt is empty"}
+    
 
-    chat = ChatGPT()
-    ibgeParser = IBGEParser()
+    # searchs = Searchs.query.filter(Searchs.question.like(f'%{user_prompt}%')).all()
+
+    start_of_month = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    searchs = Searchs.query.filter(Searchs.created_at >= start_of_month).all()
+
+
+    searchs = [search.question for search in searchs]
+    print(searchs, 'searchs')
+
+    proxy = llm.Proxy().check_similar_query(user_prompt, searchs)
+    
+    if(int(proxy) > 0):
+        search = Searchs.query.filter_by(id=int(proxy)).first()
+        return {
+            'id': search.id,
+            'query': search.question,
+            'content': search.answer
+        }
+    
+    chat = llm.ChatGPT()
+    ibgeParser = llm.IBGEParser()
     parser = ibgeParser.chat_prompt(user_prompt)
     # ibgeParser.generate_csv_data(user_prompt)
     # docs = ibgeParser.parse_llm(user_prompt)
     # prompt = ibgeParser.prompt_maker()
     content = chat.chat_prompt(
         prompt=parser['prompt'], data=parser['docs'], afirmacao=user_prompt)
-    if 'username' in session:
+    new_search = None
+    if ('username' in session):
         try:
-            user = Users.query.filter_by(username=session['username']).first()
-            new_search = Searchs(
-                author_id=user.id, question=user_prompt, answer=content)
-            db.session.add(new_search)
-            db.session.commit()
+            if search_id:
+                new_search = Searchs.query.filter_by(id=int(search_id)).first()
+                new_search.question = user_prompt
+                new_search.answer = content
+                new_search.created_at = datetime.datetime.now()
+                db.session.commit()
+            else:
+                user = Users.query.filter_by(username=session['username']).first()
+                new_search = Searchs(
+                    author_id=user.id, question=user_prompt, answer=content)
+                db.session.add(new_search)
+                db.session.commit()
         except:
             print("Error on save search")
             pass
 
     return {
+        'id': new_search.id if new_search else None,
+        'query': user_prompt,
         'content': content
+    }
+
+
+@app.route('/search/<id>', methods=['GET', 'POST', 'DELETE'])
+def search(id):
+    if request.method == 'DELETE':
+        search = Searchs.query.filter_by(id=id).first()
+        db.session.delete(search)
+        db.session.commit()
+        return {
+            'success': True
+        }
+
+    if request.method == 'POST':
+        search = Searchs.query.filter_by(id=id).first()
+        search.question = request.form['query']
+        search.answer = request.form['answer']
+        search.created_at = datetime.datetime.now()
+        db.session.commit()
+        return {
+            'id': search.id,
+            'query': search.question,
+            'content': search.answer
+        }
+
+    search = Searchs.query.filter_by(id=id).first()
+    return {
+        'id': search.id,
+        'query': search.question,
+        'content': search.answer
     }
 
 

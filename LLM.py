@@ -7,7 +7,10 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import llm
 from langchain_community.document_loaders.csv_loader import CSVLoader
 import pandas as pd
-from flask_app import db, Users, Searchs
+import flask_app
+# from .flask_app import db, Users, Searchs
+# from flask_app import Searchs
+
 
 load_dotenv()
 # adapter
@@ -21,7 +24,7 @@ load_dotenv()
 #             return "No LLM found"
 
 
-# singleton
+# Criacional: singleton
 class ChatGPT:
     llm = None
 
@@ -103,7 +106,7 @@ class IBGEParser(Parser):
         return [doc.page_content for doc in similar]
 
     def prompt_maker(self):
-        prompt_model = """
+        prompt_model = '''
         Você é um verificador de fake news, dado a base de dados abaixo, determine se a afirmação é verdadeira ou falsa.
         Siga as instruções abaixo:
         1/ Seja objetivo e claro
@@ -111,6 +114,10 @@ class IBGEParser(Parser):
         3/ Justifique sua resposta com base na base de dados fornecida
         4/ Coloque o link das notícias que você usou para justificar sua resposta
         5/ Utilize alguns conectivos que são sons de pato para deixar a conversa mais divertida. Como por exemplo: "quack", "quack quack", "quack quack quack"
+        6/ Retorne um script HTML com a resposta utilizando tailwindcss
+        7/ Retorne apenas o código HTML da resposta, sem nenhum outro texto
+        8/ Não utilize a tag html, body ou head, apenas o conteúdo interno
+        9/ Aqui está um modelo de resposta: <div class="text-white p-4"><p class="text-lg text-white">Olá, quack quack!</p><p>RESPOSTA....</p><p>Fontes:</p><ul>...</ul></div>
         
         Aqui está a base de dados:
         {data}
@@ -124,7 +131,7 @@ class IBGEParser(Parser):
         
         
         Escreva sua resposta: 
-        """
+        '''
 
         prompt = PromptTemplate(
             input_variables=["data", "afirmacao"],
@@ -134,10 +141,42 @@ class IBGEParser(Parser):
         return prompt
 
 
-# class Proxy:
-#     def __init__(self):
-#         self.searchs = Searchs()
-        
+# Estrutural: Proxy
 
-#     def chat_prompt(self, query: str):
-#         return self.parser.chat_prompt(query)
+class Proxy:
+    def check_similar_query(self, query: str, searchs: object) -> object | None:
+        chatGPT = ChatGPT()
+        
+        # ChatGPT.
+        prompt = self.prompt_maker()
+        
+        content = chatGPT.chat_prompt(prompt, searchs, query)
+
+        return content
+
+    def prompt_maker(self):
+        prompt = '''
+        Você é um veificador de similaridade, dado a base abaixo, determine o id da notícia mais similar a afirmação do usuário.
+        1\ Se a afirmação do usuário não for encontrada na base, retorne -1
+        2\ Retorne apenas o id da notícia mais similar, sem nenhum outro texto
+
+        Aqui está a base de dados:
+        {data}
+
+        Aqui está a afirmação do usuário:
+        {afirmacao}
+
+        Escreva sua resposta:
+        '''
+
+        prompt = PromptTemplate(
+            input_variables=["data", "afirmacao"],
+            template=prompt
+        )
+
+        return prompt
+    
+
+
+
+# print(Proxy().check_similar_query("O PIB do Brasil cresceu em 2020"))
