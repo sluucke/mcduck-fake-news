@@ -115,13 +115,12 @@ def llmroute():
             'content': search.answer
         }
     
-    chat = llm.LLM(llm.ChatGPT)
     ibgeParser = llm.IBGEParser()
     parser = ibgeParser.chat_prompt(user_prompt)
     # ibgeParser.generate_csv_data(user_prompt)
     # docs = ibgeParser.parse_llm(user_prompt)
     # prompt = ibgeParser.prompt_maker()
-    content = chat.chat_prompt(
+    content = llm.LLM(llm.ChatGPT).chat_prompt(
         prompt=parser['prompt'], data=parser['docs'], afirmacao=user_prompt)
     new_search = None
     if ('username' in session):
